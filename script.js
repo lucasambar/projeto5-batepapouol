@@ -30,10 +30,6 @@ function tratarErro (erro) {
 
 //status do usuário
 let statusUsuario = setInterval(manterConexao,5000);
-// function conexao() {
-//     let promessa = axios.get('https://mock-api.driven.com.br/api/v6/uol/status');
-//     promessa.then(manterConexao);
-// }
 function manterConexao () {
     let requisicao = axios.post('https:mock-api.driven.com.br/api/v6/uol/status',usuarioPost);
     requisicao.then(ativo);
