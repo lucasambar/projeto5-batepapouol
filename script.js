@@ -2,8 +2,7 @@
 const feed = document.querySelector("section");
 let mensagem, input, hora, usuario, usuarioPost, tipo;
 
-//usuarios
-usuario = prompt("Qual é o seu nome?");
+//inserçao de usuarios
 usuarios();
 
 function usuarios(){
@@ -12,6 +11,10 @@ function usuarios(){
 }
 function incluirUsuário () {
     console.log("Tudo certo!");
+    usuario = prompt("Qual é o seu nome?");
+    adcionaAPI();
+}
+function adcionaAPI() {
     usuarioPost = {
         name: usuario
     }
@@ -21,11 +24,18 @@ function incluirUsuário () {
 }
 function sucesso () {
     console.log("Usuário cadastrado com suceso!");
-    login();
+    statusMsg("entrou na sala");
 }
 function tratarErro (erro) {
-    console.log("erro");
-    console.log(erro);
+    const statusCode = erro.response.status;
+    if (statusCode === 409) {
+        usuario = prompt("Esse usuário já está logado, tente com outro nome.")
+        adcionaAPI();
+    }
+    if (statusCode === 422) {
+        usuario = prompt("Insira um nome de usuário válido.")
+        adcionaAPI();
+    }
 }
 
 //status do usuário
@@ -33,22 +43,32 @@ let statusUsuario = setInterval(manterConexao,5000);
 function manterConexao () {
     let requisicao = axios.post('https:mock-api.driven.com.br/api/v6/uol/status',usuarioPost);
     requisicao.then(ativo);
+    requisicao.catch(statusMsg, "saiu da sala");
 }
 function ativo () {
     console.log("Usuário ativo");
 }
-
-
-//enviando as mensagens
-function login() {
+function inativo () {
     hora = horaAgora();
     tipo = "todos";
     feed.innerHTML = `
     <div class="mensagem login">
-        <p><span>(${hora})</span> <strong>${usuario}</strong> entrou na sala... </p>
+        <p><span>(${hora})</span> <strong>${usuario}</strong> saiu da sala... </p>
+    </div>
+    ` 
+}
+function statusMsg (status) {
+    hora = horaAgora();
+    tipo = "todos";
+    feed.innerHTML = `
+    <div class="mensagem login">
+        <p><span>(${hora})</span> <strong>${usuario}</strong> ${status}... </p>
     </div>
     `
 }
+
+//
+//enviando as mensagens
 function enviarMensagem () {
     input = document.querySelector("input");
     mensagem = input.value;
