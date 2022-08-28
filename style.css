@@ -92,13 +92,13 @@ section {
     display: flex;
     align-items: center;
 }
-.login{
+.status{
     background-color: #DCDCDC;
 }
-.todos{
+.mensage{
     background-color: #FFFFFF;
 }
-.reservada{
+.private_mensage{
     background-color: #FFDEDE;
 }
 p{

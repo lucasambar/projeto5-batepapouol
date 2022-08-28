@@ -1,8 +1,9 @@
 //escopo global
 const feed = document.querySelector("section");
-let mensagem, input, hora, usuario, usuarioPost, tipo;
+let  input, hora, usuario, usuarioPost, tipo;
 
 //inserçao de usuarios
+usuario = prompt("Qual é o seu nome?");
 usuarios();
 
 function usuarios(){
@@ -11,7 +12,6 @@ function usuarios(){
 }
 function incluirUsuário () {
     console.log("Tudo certo!");
-    usuario = prompt("Qual é o seu nome?");
     adcionaAPI();
 }
 function adcionaAPI() {
@@ -22,7 +22,7 @@ function adcionaAPI() {
     requisicao.then(sucesso);
     requisicao.catch(tratarErro);
 }
-function sucesso () {
+function sucesso (resposta) {
     console.log("Usuário cadastrado com suceso!");
     statusMsg("entrou na sala");
 }
@@ -50,6 +50,7 @@ function ativo () {
 }
 function inativo () {
     hora = horaAgora();
+
     tipo = "todos";
     feed.innerHTML = `
     <div class="mensagem login">
@@ -61,28 +62,31 @@ function statusMsg (status) {
     hora = horaAgora();
     tipo = "todos";
     feed.innerHTML = `
-    <div class="mensagem login">
+    <div class="mensagem status">
         <p><span>(${hora})</span> <strong>${usuario}</strong> ${status}... </p>
     </div>
     `
 }
 
-//
-//enviando as mensagens
-function enviarMensagem () {
-    input = document.querySelector("input");
-    mensagem = input.value;
-    hora = horaAgora();
-    console.log(mensagem);
-    feed.innerHTML += `
-    <div class="mensagem todos">
-        <!-- hora atual//nome do usuário//mensagem -->
-        <p><span>(${hora})</span><strong> ${usuario}</strong> para <strong>${tipo} </strong>${mensagem}</p>
+//histórico de mensagem
+historico()
+function historico() {
+    let promessa = axios.get("https://mock-api.driven.com.br/api/v6/uol/messages");
+    promessa.then(historicoOK);
+}
+function historicoOK(resposta) {
+    console.log(resposta);
+    let mensagens = resposta.data;
+    mensagens.forEach(renderMensagem);
+}
+function renderMensagem (objeto) { 
+    feed.innerHTML += `<div class="mensagem ${objeto.type}">
+        <p><span>(${objeto.time})</span> <strong>${objeto.from}</strong> para <strong>${objeto.to}</strong>  ${objeto.text}</p>
     </div>
-    `
+`
 }
 function horaAgora () {
-    let data = Date();
-    let arr = data.split(" ");
-    return arr[4]
+     let data = Date();
+     let arr = data.split(" ");
+     return arr[4]
 }
