@@ -2,6 +2,11 @@
 const feed = document.querySelector("section");
 let  input, hora, usuario, usuarioPost, tipo;
 
+function horaAgora () {
+    let data = Date();
+    let arr = data.split(" ");
+    return arr[4]
+}
 //inserçao de usuarios
 usuario = prompt("Qual é o seu nome?");
 usuarios();
@@ -43,33 +48,30 @@ let statusUsuario = setInterval(manterConexao,5000);
 function manterConexao () {
     let requisicao = axios.post('https:mock-api.driven.com.br/api/v6/uol/status',usuarioPost);
     requisicao.then(ativo);
-    requisicao.catch(statusMsg, "saiu da sala");
+    requisicao.catch(inativo);
 }
 function ativo () {
     console.log("Usuário ativo");
 }
 function inativo () {
-    hora = horaAgora();
-
-    tipo = "todos";
-    feed.innerHTML = `
-    <div class="mensagem login">
-        <p><span>(${hora})</span> <strong>${usuario}</strong> saiu da sala... </p>
-    </div>
-    ` 
-}
-function statusMsg (status) {
-    hora = horaAgora();
-    tipo = "todos";
-    feed.innerHTML = `
-    <div class="mensagem status">
-        <p><span>(${hora})</span> <strong>${usuario}</strong> ${status}... </p>
+    let mensagem = {
+        from: usuario,
+        to: "todos",
+        text: "saiu da sala...",
+        type: "status",
+        time: horaAgora() 
+    }
+    feed.innerHTML += `
+    <div class="mensagem ${mensagem.type}">
+        <p><span>(${mensagem.time})</span> <strong>${mensagem.from}</strong> <strong>${mensagem.to}</strong> ${mensagem.text} </p>
     </div>
     `
+    axios.post("https://mock-api.driven.com.br/api/v6/uol/messages",mensagem)
 }
 
+
 //histórico de mensagem
-historico()
+setInterval(historico,3000);
 function historico() {
     let promessa = axios.get("https://mock-api.driven.com.br/api/v6/uol/messages");
     promessa.then(historicoOK);
@@ -77,16 +79,30 @@ function historico() {
 function historicoOK(resposta) {
     console.log(resposta);
     let mensagens = resposta.data;
-    mensagens.forEach(renderMensagem);
+    renderMensagem(mensagens)
 }
-function renderMensagem (objeto) { 
+function renderMensagem (Array) { 
+    for(let i = 0;i<Array.length;i++) {
+        let objeto = Array[i];
+        feed.innerHTML += `<div class="mensagem ${objeto.type}">
+        <p><span>(${objeto.time})</span> <strong>${objeto.from}</strong> para <strong>${objeto.to}</strong>  ${objeto.text}</p>
+        </div>
+    ` }
+}
+
+function enviarMensagem () {
+    let objeto = {
+        from: usuario,
+        to: "Todos",
+        text: document.querySelector("input").value,
+        time: horaAgora(),
+        type: "message"
+    }
     feed.innerHTML += `<div class="mensagem ${objeto.type}">
         <p><span>(${objeto.time})</span> <strong>${objeto.from}</strong> para <strong>${objeto.to}</strong>  ${objeto.text}</p>
-    </div>
-`
-}
-function horaAgora () {
-     let data = Date();
-     let arr = data.split(" ");
-     return arr[4]
+        </div>
+    `
+    let msg = document.querySelector("mensagem");
+    msg.scrollIntoView()
+    axios.post("https://mock-api.driven.com.br/api/v6/uol/messages" ,objeto)
 }

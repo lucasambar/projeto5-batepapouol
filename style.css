@@ -95,7 +95,7 @@ section {
 .status{
     background-color: #DCDCDC;
 }
-.mensage{
+.message{
     background-color: #FFFFFF;
 }
 .private_mensage{
@@ -108,6 +108,8 @@ p{
     line-height: 20px;
     letter-spacing: 0em;
     text-align: left;
+
+    display: box;
 }
 span{
     font-weight: 300;
