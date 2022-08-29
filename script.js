@@ -7,31 +7,29 @@ function horaAgora () {
     let arr = data.split(" ");
     return arr[4]
 }
-//inserçao de usuarios
+//inserçao de u((suarios
 usuario = prompt("Qual é o seu nome?");
-usuarios();
+adcionaAPI()
 
-function usuarios(){
-    let promessa = axios.get('https:mock-api.driven.com.br/api/v6/uol/participants');
-    promessa.then(incluirUsuário);   
-}
-function incluirUsuário () {
-    console.log("Tudo certo!");
-    adcionaAPI();
-}
 function adcionaAPI() {
     usuarioPost = {
         name: usuario
     }
     let requisicao = axios.post('https:mock-api.driven.com.br/api/v6/uol/participants',usuarioPost);
-    requisicao.then(sucesso);
-    requisicao.catch(tratarErro);
-}
-function sucesso (resposta) {
-    console.log("Usuário cadastrado com suceso!");
-    statusMsg("entrou na sala");
-}
-function tratarErro (erro) {
+    requisicao.then(()=>
+    {
+        console.log("Usuário cadastrado com suceso!");
+        let mensagem = {
+            from: usuario,
+            to: "todos",
+            text: "entrou na sala...",
+            type: "status",
+            time: horaAgora() 
+        }
+        axios.post("https://mock-api.driven.com.br/api/v6/uol/messages",mensagem);
+        historico();
+    });
+    requisicao.catch((erro)=> {
     const statusCode = erro.response.status;
     if (statusCode === 409) {
         usuario = prompt("Esse usuário já está logado, tente com outro nome.")
@@ -41,7 +39,9 @@ function tratarErro (erro) {
         usuario = prompt("Insira um nome de usuário válido.")
         adcionaAPI();
     }
+    });
 }
+
 
 //status do usuário
 let statusUsuario = setInterval(manterConexao,5000);
@@ -61,12 +61,8 @@ function inativo () {
         type: "status",
         time: horaAgora() 
     }
-    feed.innerHTML += `
-    <div class="mensagem ${mensagem.type}">
-        <p><span>(${mensagem.time})</span> <strong>${mensagem.from}</strong> <strong>${mensagem.to}</strong> ${mensagem.text} </p>
-    </div>
-    `
-    axios.post("https://mock-api.driven.com.br/api/v6/uol/messages",mensagem)
+    axios.post("https://mock-api.driven.com.br/api/v6/uol/messages",mensagem);
+    historico();
 }
 
 
@@ -82,6 +78,7 @@ function historicoOK(resposta) {
     renderMensagem(mensagens)
 }
 function renderMensagem (Array) { 
+    feed.innerHTML = ``;
     for(let i = 0;i<Array.length;i++) {
         let objeto = Array[i];
         feed.innerHTML += `<div class="mensagem ${objeto.type}">
@@ -102,7 +99,7 @@ function enviarMensagem () {
         <p><span>(${objeto.time})</span> <strong>${objeto.from}</strong> para <strong>${objeto.to}</strong>  ${objeto.text}</p>
         </div>
     `
-    let msg = document.querySelector("mensagem");
+    let msg = document.querySelector(".mensagem:last-child");
     msg.scrollIntoView()
     axios.post("https://mock-api.driven.com.br/api/v6/uol/messages" ,objeto)
 }
